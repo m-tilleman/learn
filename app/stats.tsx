@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
-import { Ionicons } from "@expo/vector-icons";
 import { useColors, FONT } from "@/theme";
 import { TabBar, Label } from "@/ui";
 
@@ -16,11 +15,7 @@ export default function Stats() {
     <View style={[st.screen, { backgroundColor: c.bg }]}>
       <View style={st.statusbar}>
         <Label>9:41</Label>
-        <View style={{ flexDirection: "row", gap: 5 }}>
-          <Ionicons name="cellular" size={13} color={c.muted} />
-          <Ionicons name="wifi" size={13} color={c.muted} />
-          <Ionicons name="battery-half" size={13} color={c.muted} />
-        </View>
+        <Label>5G · 100%</Label>
       </View>
       <Text style={[st.title, { color: c.text }]}>Insights</Text>
 

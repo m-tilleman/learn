@@ -1,8 +1,7 @@
 import { useRef, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useColors, FONT } from "@/theme";
-import { TabBar, Label, EmptyState } from "@/ui";
+import { TabBar, Label, EmptyState, Glyph } from "@/ui";
 import { tapLight } from "@/lib/haptics";
 
 interface Item { id: number; t: string; s: string; ready: boolean; p: number; }
@@ -57,18 +56,13 @@ export default function Ingest() {
     <View style={[st.screen, { backgroundColor: c.bg }]}>
       <View style={st.statusbar}>
         <Label>9:41</Label>
-        <View style={{ flexDirection: "row", gap: 5 }}>
-          <Ionicons name="cellular" size={13} color={c.muted} />
-          <Ionicons name="wifi" size={13} color={c.muted} />
-          <Ionicons name="battery-half" size={13} color={c.muted} />
-        </View>
+        <Label>5G · 100%</Label>
       </View>
 
       <Text style={[st.title, { color: c.text }]}>Add material</Text>
       <Text style={[st.subtitle, { color: c.muted }]}>PASTE A LINK OR DROP A FILE — WE DETECT THE TYPE FOR YOU.</Text>
 
       <View style={st.inputwrap}>
-        <Ionicons name="link" size={16} color={c.muted} style={{ position: "absolute", left: 14, top: 15, zIndex: 1 }} />
         <TextInput
           value={url}
           onChangeText={setUrl}
@@ -83,14 +77,13 @@ export default function Ingest() {
       </View>
 
       <Pressable accessibilityRole="button" accessibilityLabel="Add to library" onPress={add} style={[st.primary, { backgroundColor: c.tangerine }]}>
-        <Text style={{ color: c.onAccent, fontFamily: FONT.display, fontWeight: "600", fontSize: 14 }}>Add to library</Text>
-        <Ionicons name="arrow-forward" size={16} color={c.onAccent} />
+        <Text style={{ color: c.onAccent, fontFamily: FONT.display, fontWeight: "600", fontSize: 14 }}>Add to library  →</Text>
       </Pressable>
 
       <Label style={{ marginTop: 18, marginBottom: 10 }}>LIBRARY</Label>
       {lib.length === 0 ? (
         <View style={{ flex: 1 }}>
-          <EmptyState icon="file-tray-outline" title="Nothing here yet" body="Add a link, PDF, or ePub above and it'll turn into review cards." />
+          <EmptyState glyph="⌸" title="Nothing here yet" body="Add a link, PDF, or ePub above and it'll turn into review cards." />
         </View>
       ) : (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 12, paddingBottom: 8 }}>
@@ -99,7 +92,7 @@ export default function Ingest() {
               <View style={st.libhead}>
                 <Text style={{ fontFamily: FONT.display, fontSize: 13, fontWeight: "600", color: c.text, flex: 1 }}>{it.t}</Text>
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${it.t}`} hitSlop={8} onPress={() => remove(it.id)}>
-                  <Ionicons name="close" size={16} color={c.muted} />
+                  <Glyph g="✕" size={15} color={c.muted} />
                 </Pressable>
               </View>
               <Text style={{ fontFamily: FONT.mono, fontSize: 10.5, marginTop: 5, color: it.ready ? c.turquoiseLt : c.muted }}>{it.s}</Text>
@@ -124,7 +117,7 @@ const st = StyleSheet.create({
   title: { fontFamily: FONT.display, fontSize: 23, fontWeight: "600", letterSpacing: -0.4 },
   subtitle: { fontFamily: FONT.mono, fontSize: 10.5, letterSpacing: 1, marginTop: 6, lineHeight: 17 },
   inputwrap: { position: "relative", marginTop: 16 },
-  inp: { borderWidth: 1, borderRadius: 14, paddingVertical: 14, paddingLeft: 38, paddingRight: 56, fontSize: 13, fontFamily: FONT.display },
+  inp: { borderWidth: 1, borderRadius: 14, paddingVertical: 14, paddingLeft: 14, paddingRight: 56, fontSize: 13, fontFamily: FONT.display },
   autotag: { position: "absolute", right: 10, top: 11, borderRadius: 8, paddingVertical: 4, paddingHorizontal: 8 },
   primary: { marginTop: 12, borderRadius: 12, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
   libitem: { borderWidth: 1, borderRadius: 14, padding: 13 },

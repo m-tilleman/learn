@@ -1,9 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet, Animated, PanResponder, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useColors, FONT } from "@/theme";
-import { Label, EmptyState, useCardShortcuts } from "@/ui";
+import { Label, EmptyState, Glyph, useCardShortcuts } from "@/ui";
 import { FSRS6, Grade } from "@/lib/fsrs6";
 import { tapLight, tapSuccess, tapWarning } from "@/lib/haptics";
 
@@ -87,7 +86,7 @@ export default function Study() {
   if (idx >= DECK.length) {
     return (
       <View style={[st.screen, { backgroundColor: c.bg }]}>
-        <EmptyState icon="checkmark-done-outline" title="Session complete"
+        <EmptyState glyph="✓" title="Session complete"
           body="3 reviewed · retention on track at 91%. Next session in ~6 hours."
           cta="Back to home" onCta={() => router.replace("/")} />
       </View>
@@ -104,7 +103,7 @@ export default function Study() {
     <View style={[st.screen, { backgroundColor: c.bg }]}>
       <View style={st.shd}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close session" onPress={() => router.replace("/")}>
-          <Ionicons name="close" size={20} color={c.muted} />
+          <Glyph g="✕" size={18} color={c.muted} />
         </Pressable>
         <View style={[st.pbar, { backgroundColor: c.border }]}>
           <View style={{ height: "100%", width: `${((base + idx) / total) * 100}%`, backgroundColor: c.tangerine, borderRadius: 3 }} />

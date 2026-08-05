@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useColors, useTheme, FONT } from "@/theme";
-import { TabBar, Label } from "@/ui";
+import { TabBar, Label, Glyph } from "@/ui";
 import { tapLight } from "@/lib/haptics";
 
 function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
@@ -22,26 +21,21 @@ export default function You() {
   const toggleTheme = useTheme((s) => s.toggle);
   const [reminders, setReminders] = useState(true);
 
-  const Row = ({ icon, label, value, color }: { icon: any; label: string; value?: React.ReactNode; color?: string }) => (
+  const Row = ({ glyph, label, value, color }: { glyph: string; label: string; value?: React.ReactNode; color?: string }) => (
     <View style={[rw.row, { borderBottomColor: c.border }]}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Ionicons name={icon} size={16} color={color ?? c.muted} />
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <Glyph g={glyph} size={16} color={color ?? c.muted} />
         <Text style={{ color: color ?? c.text, fontSize: 14, fontFamily: FONT.display }}>{label}</Text>
       </View>
       {value}
     </View>
   );
-  const chev = <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }} />;
 
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
       <View style={st.statusbar}>
         <Label>9:41</Label>
-        <View style={{ flexDirection: "row", gap: 5 }}>
-          <Ionicons name="cellular" size={13} color={c.muted} />
-          <Ionicons name="wifi" size={13} color={c.muted} />
-          <Ionicons name="battery-half" size={13} color={c.muted} />
-        </View>
+        <Label>5G · 100%</Label>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 10 }}>
@@ -60,22 +54,22 @@ export default function You() {
 
         <Label style={{ marginTop: 18, marginBottom: 8 }}>APPEARANCE</Label>
         <View style={[st.rows, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Row icon="color-palette-outline" label="Vintage white theme"
+          <Row glyph="◑" label="Vintage white theme"
             value={<Toggle on={mode === "white"} onToggle={toggleTheme} label="Toggle vintage white theme" />} />
         </View>
 
         <Label style={{ marginTop: 18, marginBottom: 8 }}>STUDY SETTINGS</Label>
         <View style={[st.rows, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Row icon="options-outline" label="Scheduler" value={<Text style={rw.rv(c)}>FSRS-6</Text>} />
-          <Row icon="disc-outline" label="Target retention" value={<Text style={rw.rv(c)}>90%</Text>} />
-          <Row icon="albums-outline" label="Daily new cards" value={<Text style={rw.rv(c)}>20</Text>} />
-          <Row icon="notifications-outline" label="Reminders" value={<Toggle on={reminders} onToggle={() => setReminders(!reminders)} label="Toggle reminders" />} />
+          <Row glyph="⚙" label="Scheduler" value={<Text style={rw.rv(c)}>FSRS-6</Text>} />
+          <Row glyph="◎" label="Target retention" value={<Text style={rw.rv(c)}>90%</Text>} />
+          <Row glyph="▤" label="Daily new cards" value={<Text style={rw.rv(c)}>20</Text>} />
+          <Row glyph="◔" label="Reminders" value={<Toggle on={reminders} onToggle={() => setReminders(!reminders)} label="Toggle reminders" />} />
         </View>
 
         <Label style={{ marginTop: 18, marginBottom: 8 }}>ACCOUNT</Label>
         <View style={[st.rows, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Row icon="download-outline" label="Export data" />
-          <Row icon="log-out-outline" label="Sign out" color={c.cherry} />
+          <Row glyph="↧" label="Export data" />
+          <Row glyph="⏻" label="Sign out" color={c.cherry} />
         </View>
       </ScrollView>
 
