@@ -1,23 +1,26 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { theme } from "@/theme";
+import { useColors, useTheme } from "@/theme";
 
 export default function RootLayout() {
+  const c = useColors();
+  const mode = useTheme((s) => s.mode);
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={mode === "vinyl" ? "light" : "dark"} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: theme.bg },
-          headerTintColor: theme.text,
-          contentStyle: { backgroundColor: theme.bg },
+          headerShown: false,
+          animation: "fade",          // premium cross-screen transition
+          animationDuration: 220,
+          contentStyle: { backgroundColor: c.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: "Recall" }} />
-        <Stack.Screen name="study" options={{ title: "Study", presentation: "fullScreenModal" }} />
-        <Stack.Screen name="ingest" options={{ title: "Add material" }} />
-        <Stack.Screen name="analytics" options={{ title: "Retention" }} />
-        <Stack.Screen name="graph" options={{ title: "Knowledge graph" }} />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="study" options={{ animation: "slide_from_bottom" }} />
+        <Stack.Screen name="ingest" />
+        <Stack.Screen name="stats" />
+        <Stack.Screen name="you" />
       </Stack>
     </>
   );

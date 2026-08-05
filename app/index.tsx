@@ -1,123 +1,136 @@
-import { View, Text, Pressable, StyleSheet, ImageBackground } from "react-native";
+import { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { theme, HERO_IMAGE, HERO_CREDIT } from "@/theme";
-import { analytics } from "@/mock/data";
+import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Circle, Polyline, Text as SvgText } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
+import { useColors, FONT } from "@/theme";
+import { TabBar, Label } from "@/ui";
+import { tapLight } from "@/lib/haptics";
 
-// The dashboard puts the Unsplash "water drop on green plant" photo behind
-// frosted-glass cards. A dark scrim keeps text legible over the photo.
-export default function Dashboard() {
+const DUE = [
+  { t: "Spacing effect", c: "cherry", s: "due now" },
+  { t: "FSRS scheduler", c: "cherry", s: "due now" },
+  { t: "Testing effect", c: "tangerine", s: "2 left" },
+  { t: "Dual coding", c: "turquoise", s: "1 left" },
+  { t: "Interleaving", c: "turquoise", s: "3 left" },
+] as const;
+
+export default function Home() {
+  const c = useColors();
   const router = useRouter();
-  const dueMin = Math.max(1, Math.round((analytics.dueToday * 14) / 60));
+  const [onb, setOnb] = useState(true);
+  const done = 12, total = 34;
+  const C = 2 * Math.PI * 40;
 
   return (
-    <ImageBackground source={{ uri: HERO_IMAGE }} style={s.hero} imageStyle={s.heroImg}>
-      <View style={s.scrim} />
-      <View style={s.content}>
-        {/* Top bar */}
-        <View style={s.topbar}>
-          <View style={s.avatar} />
-          <View style={[s.glass, s.badge]}>
-            <View style={s.badgeDot}><Text style={s.badgeIcon}>◧</Text></View>
-            <View>
-              <Text style={s.badgeTitle}>RECALL</Text>
-              <Text style={s.badgeSub}>LEARNING</Text>
-            </View>
-          </View>
-          <View style={[s.glass, s.iconBtn]}><Text style={s.iconGlyph}>⊞</Text></View>
+    <View style={[st.screen, { backgroundColor: c.bg }]}>
+      <View style={st.statusbar}>
+        <Label>9:41</Label>
+        <View style={{ flexDirection: "row", gap: 5 }}>
+          <Ionicons name="cellular" size={13} color={c.muted} />
+          <Ionicons name="wifi" size={13} color={c.muted} />
+          <Ionicons name="battery-half" size={13} color={c.muted} />
         </View>
-
-        {/* Headline */}
-        <View style={s.headlineRow}>
-          <Text style={s.headline}>Keep it{"\n"}stuck</Text>
-          <View style={[s.glass, s.iconBtn]}><Text style={s.iconGlyph}>◔</Text></View>
-        </View>
-
-        <View style={{ flex: 1 }} />
-
-        {/* Retention score */}
-        <View style={[s.glass, s.scoreCard]}>
-          <Text style={s.scoreNum}>{Math.round(analytics.retention * 100)}</Text>
-          <Text style={s.scoreLabel}>Your retention{"\n"}score</Text>
-          <View style={s.scoreCircle}><Text style={s.iconGlyph}>↗</Text></View>
-        </View>
-
-        {/* Stat tiles */}
-        <View style={s.tiles}>
-          <Pressable style={[s.tile, { backgroundColor: "rgba(52,122,60,0.85)" }]} onPress={() => router.push("/study")}>
-            <Text style={s.tileLabel}>Study{"\n"}now</Text>
-            <Text style={s.tileNum}>{analytics.dueToday}</Text>
-            <Text style={s.tileFoot}>cards due · ~{dueMin} min</Text>
-          </Pressable>
-          <View style={[s.tile, { backgroundColor: "rgba(12,30,18,0.55)" }]}>
-            <Text style={s.tileLabel}>Day{"\n"}streak</Text>
-            <Text style={s.tileNum}>{analytics.streak}</Text>
-            <Text style={s.tileFoot}>on track</Text>
-          </View>
-        </View>
-
-        {/* Floating pill nav */}
-        <View style={[s.glass, s.navbar]}>
-          <NavItem label="Study" active onPress={() => router.push("/study")} />
-          <NavItem label="Add" onPress={() => router.push("/ingest")} />
-          <View style={s.fab}><Text style={{ color: "#14331B", fontSize: 20 }}>⁘</Text></View>
-          <NavItem label="Graph" onPress={() => router.push("/graph")} />
-          <NavItem label="You" onPress={() => router.push("/analytics")} />
-        </View>
-
-        <Text style={s.credit}>{HERO_CREDIT}</Text>
       </View>
-    </ImageBackground>
+
+      <View style={st.hd}>
+        <Text style={[st.wordmark, { color: c.text }]}>RECALL</Text>
+        <View style={[st.streak, { backgroundColor: "rgba(226,141,52,0.16)" }]}>
+          <Ionicons name="flame" size={13} color={c.tangerineSoft} />
+          <Text style={{ color: c.tangerineSoft, fontWeight: "600", fontFamily: FONT.display }}>23</Text>
+        </View>
+      </View>
+
+      {onb && (
+        <Pressable
+          onPress={() => setOnb(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss onboarding tip"
+          style={[st.onb, { backgroundColor: "rgba(226,74,52,0.13)", borderColor: "rgba(226,74,52,0.3)" }]}
+        >
+          <Text style={{ color: c.text, fontSize: 12, fontFamily: FONT.display }}>✨  New here? Take the 30-second tour</Text>
+          <Ionicons name="close" size={14} color={c.muted} />
+        </Pressable>
+      )}
+
+      <LinearGradient
+        colors={[c.gradientA, c.gradientC, c.gradientB]}
+        locations={[0, 0.5, 1]}
+        start={{ x: 0.9, y: 0 }}
+        end={{ x: 0.1, y: 1 }}
+        style={st.hero}
+      >
+        <View style={st.heroText}>
+          <Label style={{ color: "rgba(255,255,255,0.85)" }}>TODAY'S SESSION</Label>
+          <Text style={st.hbig}>22 cards left</Text>
+          <Label style={{ color: "rgba(255,255,255,0.85)" }}>≈ 6 MIN · MIXED REVIEW</Label>
+        </View>
+        <Svg width={78} height={78} viewBox="0 0 96 96" style={{ position: "absolute", top: 15, right: 15 }}>
+          <Circle cx={48} cy={48} r={40} fill="none" stroke="rgba(20,15,8,0.35)" strokeWidth={7} />
+          <Circle cx={48} cy={48} r={40} fill="none" stroke="#FBF6EB" strokeWidth={7} strokeLinecap="round"
+            strokeDasharray={`${C}`} strokeDashoffset={C * (1 - done / total)} transform="rotate(-90 48 48)" />
+          <SvgText x={48} y={46} textAnchor="middle" fontSize={19} fontWeight="600" fill="#FBF6EB" fontFamily="Space Grotesk">{String(done)}</SvgText>
+          <SvgText x={48} y={61} textAnchor="middle" fontSize={9} fill="rgba(251,246,235,0.8)" fontFamily="Space Mono">of {total}</SvgText>
+        </Svg>
+      </LinearGradient>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Continue today's study session"
+        onPress={() => { tapLight(); router.push("/study"); }}
+        style={[st.primary, { backgroundColor: c.tangerine }]}
+      >
+        <Text style={{ color: c.onAccent, fontFamily: FONT.display, fontWeight: "600", fontSize: 14 }}>Continue session</Text>
+        <Ionicons name="arrow-forward" size={16} color={c.onAccent} />
+      </Pressable>
+
+      <View style={st.statrow}>
+        <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}>
+          <Label>RETENTION</Label>
+          <Text style={[st.statbig, { color: c.text }]}>91%</Text>
+          <Svg width="100%" height={18} viewBox="0 0 100 18" preserveAspectRatio="none">
+            <Polyline points="0,13 17,11 33,12 50,8 67,9 83,5 100,4" fill="none" stroke={c.turquoiseLt} strokeWidth={2.5} />
+          </Svg>
+        </View>
+        <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}>
+          <Label>MATURE</Label>
+          <Text style={[st.statbig, { color: c.text }]}>612</Text>
+          <Label style={{ marginTop: 6, color: c.turquoiseLt }}>+18 THIS WEEK</Label>
+        </View>
+      </View>
+
+      <Label style={{ marginTop: 15, marginBottom: 8 }}>DUE TODAY</Label>
+      <View style={st.chips}>
+        {DUE.map((d, i) => (
+          <View key={i} style={[st.chip, { backgroundColor: c.card, borderColor: c.border }]}>
+            <View style={[st.dot, { backgroundColor: (c as any)[d.c] }]} />
+            <Text style={{ color: c.text, fontSize: 12, fontFamily: FONT.display }}>{d.t} · {d.s}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={{ flex: 1 }} />
+      <TabBar />
+    </View>
   );
 }
 
-function NavItem({ label, active, onPress }: { label: string; active?: boolean; onPress?: () => void }) {
-  return (
-    <Pressable style={s.navItem} onPress={onPress}>
-      <Text style={[s.navLabel, active && { color: theme.primary }]}>{label}</Text>
-    </Pressable>
-  );
-}
-
-const s = StyleSheet.create({
-  hero: { flex: 1, backgroundColor: theme.bg },
-  heroImg: { resizeMode: "cover" },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(5,12,6,0.35)" },
-  content: { flex: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-
-  glass: {
-    backgroundColor: theme.glass,
-    borderWidth: 1,
-    borderColor: theme.glassBorder,
-    // On web this maps to backdrop-filter; on native use @react-native-community/blur (BlurView).
-  },
-  topbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: theme.primaryDim, borderWidth: 2, borderColor: "rgba(255,255,255,0.55)" },
-  badge: { flexDirection: "row", alignItems: "center", gap: 7, paddingVertical: 7, paddingLeft: 9, paddingRight: 14, borderRadius: 999 },
-  badgeDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: "#EAFBEF", alignItems: "center", justifyContent: "center" },
-  badgeIcon: { color: "#1B4D26", fontSize: 12 },
-  badgeTitle: { color: theme.text, fontSize: 13, fontWeight: "600" },
-  badgeSub: { color: "#C8E6CC", fontSize: 9, letterSpacing: 2 },
-  iconBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  iconGlyph: { color: theme.text, fontSize: 16 },
-
-  headlineRow: { marginTop: 22, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  headline: { color: theme.text, fontSize: 40, fontWeight: "700", lineHeight: 42, letterSpacing: -1 },
-
-  scoreCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 22, marginBottom: 12 },
-  scoreNum: { color: theme.text, fontSize: 38, fontWeight: "700" },
-  scoreLabel: { flex: 1, color: theme.text, fontSize: 15, fontWeight: "600" },
-  scoreCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(255,255,255,0.16)", alignItems: "center", justifyContent: "center" },
-
-  tiles: { flexDirection: "row", gap: 12, marginBottom: 16 },
-  tile: { flex: 1, borderRadius: 22, padding: 15, borderWidth: 1, borderColor: "rgba(255,255,255,0.14)" },
-  tileLabel: { color: theme.text, fontSize: 14, fontWeight: "600" },
-  tileNum: { color: theme.text, fontSize: 34, fontWeight: "700", marginTop: 18 },
-  tileFoot: { color: "#D3ECD6", fontSize: 12, marginTop: 2 },
-
-  navbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 26, paddingVertical: 10, paddingHorizontal: 18, marginBottom: 8 },
-  navItem: { alignItems: "center" },
-  navLabel: { color: theme.muted, fontSize: 11, fontWeight: "600" },
-  fab: { width: 52, height: 52, borderRadius: 26, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", marginTop: -26 },
-
-  credit: { color: "rgba(255,255,255,0.5)", fontSize: 10, textAlign: "center" },
+const st = StyleSheet.create({
+  screen: { flex: 1, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 8 },
+  statusbar: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  hd: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  wordmark: { fontFamily: FONT.mono, fontSize: 15, letterSpacing: 4, fontWeight: "700" },
+  streak: { flexDirection: "row", alignItems: "center", gap: 5, paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
+  onb: { marginTop: 13, borderWidth: 1, borderRadius: 12, padding: 11, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  hero: { marginTop: 13, height: 146, borderRadius: 18, overflow: "hidden", padding: 16, justifyContent: "flex-end" },
+  heroText: { maxWidth: 190 },
+  hbig: { fontFamily: FONT.display, fontSize: 23, fontWeight: "600", color: "#FFFBF2", marginVertical: 2 },
+  primary: { marginTop: 12, borderRadius: 12, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  statrow: { flexDirection: "row", gap: 12, marginTop: 13 },
+  stat: { flex: 1, borderWidth: 1, borderRadius: 14, padding: 12 },
+  statbig: { fontFamily: FONT.display, fontSize: 25, fontWeight: "600", marginTop: 3 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 7, borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
 });
