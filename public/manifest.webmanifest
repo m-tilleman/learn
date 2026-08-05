@@ -1,0 +1,16 @@
+{
+  "name": "Recall — learn & retain",
+  "short_name": "Recall",
+  "description": "Turn any source into a science-backed spaced-repetition learning system.",
+  "start_url": "/learn/",
+  "scope": "/learn/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A1A0F",
+  "theme_color": "#2F6B3F",
+  "icons": [
+    { "src": "/learn/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/learn/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/learn/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

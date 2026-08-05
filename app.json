@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Recall",
+    "slug": "recall-app",
+    "scheme": "recall",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "backgroundColor": "#0A1A0F",
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png",
+      "themeColor": "#2F6B3F",
+      "description": "Turn any source into a science-backed spaced-repetition learning system."
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.recall.app"
+    },
+    "android": {
+      "package": "com.recall.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A1A0F"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-notifications", { "icon": "./assets/notification-icon.png" }]
+    ],
+    "experiments": { "typedRoutes": true, "baseUrl": "/learn" }
+  }
+}
