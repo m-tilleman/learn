@@ -10,7 +10,7 @@
     "backgroundColor": "#0A1A0F",
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/favicon.png",
       "themeColor": "#2F6B3F",
       "description": "Turn any source into a science-backed spaced-repetition learning system."
