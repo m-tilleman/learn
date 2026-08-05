@@ -1,28 +1,29 @@
 // Shared UI: bottom tab bar, empty/loading/error states, keyboard hook, primitives.
+// Icons are unicode glyphs (no native icon module needed on web).
 import { useEffect } from "react";
 import { View, Text, Pressable, ActivityIndicator, Platform, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter, usePathname } from "expo-router";
 import { useColors, FONT } from "@/theme";
+
+export function Glyph({ g, size = 18, color }: { g: string; size?: number; color?: string }) {
+  return <Text allowFontScaling={false} style={{ fontSize: size, color, lineHeight: size + 2 }}>{g}</Text>;
+}
 
 export function Label({ children, style }: { children: React.ReactNode; style?: any }) {
   const c = useColors();
   return (
-    <Text
-      allowFontScaling
-      style={[{ fontFamily: FONT.mono, fontSize: 10, letterSpacing: 1.5, color: c.muted }, style]}
-    >
+    <Text allowFontScaling style={[{ fontFamily: FONT.mono, fontSize: 10, letterSpacing: 1.5, color: c.muted }, style]}>
       {children}
     </Text>
   );
 }
 
 const TABS = [
-  { key: "home", label: "Home", icon: "home-outline", href: "/" },
-  { key: "ingest", label: "Add", icon: "add-circle-outline", href: "/ingest" },
-  { key: "study", label: "Study", icon: "play-outline", href: "/study" },
-  { key: "stats", label: "Stats", icon: "stats-chart-outline", href: "/stats" },
-  { key: "you", label: "You", icon: "person-outline", href: "/you" },
+  { key: "home", label: "Home", g: "⌂", href: "/" },
+  { key: "ingest", label: "Add", g: "＋", href: "/ingest" },
+  { key: "study", label: "Study", g: "▶", href: "/study" },
+  { key: "stats", label: "Stats", g: "▤", href: "/stats" },
+  { key: "you", label: "You", g: "◍", href: "/you" },
 ] as const;
 
 export function TabBar() {
@@ -31,10 +32,7 @@ export function TabBar() {
   const path = usePathname();
   const activeFor = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   return (
-    <View
-      accessibilityRole="tablist"
-      style={[s.tabbar, { borderTopColor: c.border }]}
-    >
+    <View accessibilityRole="tablist" style={[s.tabbar, { borderTopColor: c.border }]}>
       {TABS.map((t) => {
         const on = activeFor(t.href);
         return (
@@ -46,7 +44,7 @@ export function TabBar() {
             onPress={() => router.replace(t.href as any)}
             style={s.tab}
           >
-            <Ionicons name={t.icon as any} size={20} color={on ? c.tangerine : c.muted} />
+            <Glyph g={t.g} size={19} color={on ? c.tangerine : c.muted} />
             <Text style={{ fontFamily: FONT.mono, fontSize: 9, letterSpacing: 0.5, marginTop: 3, color: on ? c.tangerine : c.muted }}>
               {t.label}
             </Text>
@@ -57,13 +55,13 @@ export function TabBar() {
   );
 }
 
-export function EmptyState({ icon = "sparkles-outline", title, body, cta, onCta }: {
-  icon?: string; title: string; body: string; cta?: string; onCta?: () => void;
+export function EmptyState({ glyph = "✧", title, body, cta, onCta }: {
+  glyph?: string; title: string; body: string; cta?: string; onCta?: () => void;
 }) {
   const c = useColors();
   return (
     <View style={s.center} accessibilityRole="summary">
-      <Ionicons name={icon as any} size={34} color={c.muted} />
+      <Glyph g={glyph} size={34} color={c.muted} />
       <Text style={{ fontFamily: FONT.display, fontSize: 18, fontWeight: "600", color: c.text, marginTop: 12 }}>{title}</Text>
       <Text style={{ fontFamily: FONT.display, fontSize: 14, color: c.muted, textAlign: "center", marginTop: 6, maxWidth: 260 }}>{body}</Text>
       {cta && (
@@ -89,7 +87,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
   const c = useColors();
   return (
     <View style={s.center} accessibilityRole="alert">
-      <Ionicons name="alert-circle-outline" size={30} color={c.cherry} />
+      <Glyph g="⚠" size={30} color={c.cherry} />
       <Text style={{ fontFamily: FONT.display, fontSize: 15, color: c.text, textAlign: "center", marginTop: 10, maxWidth: 260 }}>{message}</Text>
       {onRetry && (
         <Pressable onPress={onRetry} accessibilityRole="button" accessibilityLabel="Retry" style={[s.cta, { backgroundColor: c.card, borderWidth: 1, borderColor: c.border }]}>
