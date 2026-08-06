@@ -29,8 +29,6 @@ const fsrs = new FSRS6({ requestRetention: 0.9 });
 const fmt = (d: number) => (d < 1 ? "<1d" : d < 30 ? `${d}d` : `${Math.round(d / 30)}mo`);
 const { width } = Dimensions.get("window");
 
-interface Snap { remaining: number[]; reviewed: number; conf: Conf | null; guess: string; }
-
 // Open a specific concept first when arriving from a "due today" chip or library item.
 function initialOrder(concept?: string): number[] {
   const order = [0, 1, 2];
@@ -57,7 +55,6 @@ export default function Study() {
   const [conf, setConf] = useState<Conf | null>(null);
   const [guess, setGuess] = useState("");
   const [flash, setFlash] = useState<string | null>(null);
-  const [snap, setSnap] = useState<Snap | null>(null);
 
   const ans = useRef(new Animated.Value(0)).current;
   const enter = useRef(new Animated.Value(1)).current;
@@ -85,7 +82,6 @@ export default function Study() {
 
   const grade = (g: Grade) => {
     if (!revealed || current == null) return;
-    setSnap({ remaining, reviewed, conf, guess });
     const hyper = conf === "high" && g <= 2; // high-confidence miss → hypercorrection
     hyper ? tapWarning() : g <= 1 ? tapWarning() : tapSuccess();
 
@@ -105,12 +101,6 @@ export default function Study() {
       setReviewed((n) => n + 1);
       settleNext();
     });
-  };
-
-  const undo = () => {
-    if (!snap) return;
-    setRemaining(snap.remaining); setReviewed(snap.reviewed); setConf(snap.conf); setGuess(snap.guess);
-    setSnap(null); setRevealed(true); ans.setValue(1); setFlash(null);
   };
 
   useCardShortcuts({ onReveal: () => (revealed ? undefined : reveal("mid")), onGrade: (g) => (revealed ? grade(g) : reveal("mid")) });
@@ -195,9 +185,6 @@ export default function Study() {
             <View style={[st.ansbox, { backgroundColor: c.card, borderColor: c.border }]}>
               <Text style={{ color: c.text, fontSize: 15, lineHeight: 22, fontFamily: FONT.display }}>{card.a}</Text>
             </View>
-            <View style={[st.missed, { backgroundColor: "rgba(226,141,52,0.1)" }]}>
-              <Text style={{ color: c.muted, fontSize: 11, fontFamily: FONT.mono }}>MISSING: {card.miss}</Text>
-            </View>
           </Animated.View>
         )}
       </Animated.View>
@@ -225,12 +212,6 @@ export default function Study() {
                   <Text style={{ color: c.muted, fontFamily: FONT.mono, fontSize: 10, marginTop: 3 }}>{fmt(previews[g])}</Text>
                 </Pressable>
               ))}
-            </View>
-            <View accessibilityLiveRegion="polite" style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
-              <Text style={{ color: c.turquoiseLt, fontFamily: FONT.mono, fontSize: 11 }}>▲ Stability rising  ·  </Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="Undo last grade" onPress={undo}>
-                <Text style={{ color: c.muted, fontFamily: FONT.mono, fontSize: 11, textDecorationLine: "underline" }}>Undo</Text>
-              </Pressable>
             </View>
           </>
         )}
