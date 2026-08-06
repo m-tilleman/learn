@@ -1,13 +1,15 @@
-// supabase.ts — client singleton. Uses EXPO_PUBLIC_* env vars (safe for client bundle).
-import { createClient } from "@supabase/supabase-js";
+// Supabase client singleton. The app runs in two modes:
+//  • "demo"  — no env vars set → sample data, no auth (current GitHub Pages build).
+//  • "live"  — EXPO_PUBLIC_SUPABASE_URL + ANON_KEY set → real auth + persistence.
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
+const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-if (!url || !anonKey) {
-  console.warn("Supabase env vars missing — copy .env.example to .env and fill them in.");
-}
+export const isSupabaseConfigured =
+  /^https?:\/\//.test(url) && anonKey.length > 20 && !url.includes("YOUR-PROJECT");
 
-export const supabase = createClient(url ?? "", anonKey ?? "", {
-  auth: { persistSession: true, autoRefreshToken: true },
-});
+// Only construct the client when configured; otherwise export null and stay in demo mode.
+export const supabase: SupabaseClient | null = isSupabaseConfigured
+  ? createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+  : null;
