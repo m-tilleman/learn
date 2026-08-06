@@ -1,9 +1,10 @@
 // Lightweight haptics. Uses the web Vibration API where available; a safe no-op
-// otherwise. (Native Taptic Engine support can be re-added later via `npx expo
-// install expo-haptics` — kept out here to avoid web version-skew on GitHub Pages.)
+// otherwise. Respects the user's "Haptics" setting.
 import { Platform } from "react-native";
+import { getSettings } from "@/settings";
 
 const vibrate = (p: number | number[]) => {
+  if (!getSettings().haptics) return;
   if (Platform.OS === "web" && typeof navigator !== "undefined" && "vibrate" in navigator) {
     try { navigator.vibrate(p); } catch {}
   }
