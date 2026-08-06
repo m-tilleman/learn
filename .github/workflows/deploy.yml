@@ -23,10 +23,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - run: npm install
 
       - name: Build static web export
         run: npm run build:web
+        env:
+          # Set these as repo secrets to switch the live site from demo to live mode.
+          # If unset, the build stays in demo mode (sample data, no auth).
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: SPA fallback + Pages hygiene
         run: |
