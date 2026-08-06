@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import Svg, { Defs, LinearGradient as SvgGradient, Stop, Rect, Circle, Polyline, Text as SvgText } from "react-native-svg";
 import { useColors, FONT } from "@/theme";
-import { TabBar, Label, Glyph } from "@/ui";
+import { TabBar, Label } from "@/ui";
 import { tapLight } from "@/lib/haptics";
 
 const DUE = [
@@ -17,27 +16,22 @@ const DUE = [
 export default function Home() {
   const c = useColors();
   const router = useRouter();
-  const [onb, setOnb] = useState(true);
   const done = 12, total = 34;
   const C = 2 * Math.PI * 40;
+
+  const openConcept = (name: string) => {
+    tapLight();
+    router.push(`/study?concept=${encodeURIComponent(name)}` as any);
+  };
 
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
       <View style={st.hd}>
         <Text style={[st.wordmark, { color: c.text }]}>RECALL</Text>
         <View style={[st.streak, { backgroundColor: "rgba(226,141,52,0.16)" }]}>
-          <Glyph g="▲" size={11} color={c.tangerineSoft} />
-          <Text style={{ color: c.tangerineSoft, fontWeight: "600", fontFamily: FONT.display }}> 23</Text>
+          <Text style={{ color: c.tangerineSoft, fontWeight: "600", fontFamily: FONT.display }}>▲ 23</Text>
         </View>
       </View>
-
-      {onb && (
-        <Pressable onPress={() => setOnb(false)} accessibilityRole="button" accessibilityLabel="Dismiss onboarding tip"
-          style={[st.onb, { backgroundColor: "rgba(226,74,52,0.13)", borderColor: "rgba(226,74,52,0.3)" }]}>
-          <Text style={{ color: c.text, fontSize: 12, fontFamily: FONT.display }}>✧  New here? Take the 30-second tour</Text>
-          <Glyph g="✕" size={13} color={c.muted} />
-        </Pressable>
-      )}
 
       <View style={st.hero}>
         <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
@@ -64,12 +58,6 @@ export default function Home() {
         </Svg>
       </View>
 
-      <Pressable accessibilityRole="button" accessibilityLabel="Continue today's study session"
-        onPress={() => { tapLight(); router.push("/study"); }}
-        style={[st.primary, { backgroundColor: c.tangerine }]}>
-        <Text style={{ color: c.onAccent, fontFamily: FONT.display, fontWeight: "600", fontSize: 14 }}>Continue session  →</Text>
-      </Pressable>
-
       <View style={st.statrow}>
         <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}>
           <Label>RETENTION</Label>
@@ -85,13 +73,14 @@ export default function Home() {
         </View>
       </View>
 
-      <Label style={{ marginTop: 15, marginBottom: 8 }}>DUE TODAY</Label>
+      <Label style={{ marginTop: 22, marginBottom: 8 }}>DUE TODAY</Label>
       <View style={st.chips}>
         {DUE.map((d, i) => (
-          <View key={i} style={[st.chip, { backgroundColor: c.card, borderColor: c.border }]}>
+          <Pressable key={i} accessibilityRole="button" accessibilityLabel={`Study ${d.t}`}
+            onPress={() => openConcept(d.t)} style={[st.chip, { backgroundColor: c.card, borderColor: c.border }]}>
             <View style={[st.dot, { backgroundColor: (c as any)[d.c] }]} />
             <Text style={{ color: c.text, fontSize: 12, fontFamily: FONT.display }}>{d.t} · {d.s}</Text>
-          </View>
+          </Pressable>
         ))}
       </View>
 
@@ -103,19 +92,16 @@ export default function Home() {
 
 const st = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 8 },
-  statusbar: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
   hd: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   wordmark: { fontFamily: FONT.mono, fontSize: 15, letterSpacing: 4, fontWeight: "700" },
   streak: { flexDirection: "row", alignItems: "center", paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
-  onb: { marginTop: 13, borderWidth: 1, borderRadius: 12, padding: 11, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  hero: { marginTop: 13, height: 146, borderRadius: 18, overflow: "hidden", padding: 16, justifyContent: "flex-end" },
+  hero: { marginTop: 16, height: 146, borderRadius: 18, overflow: "hidden", padding: 16, justifyContent: "flex-end" },
   heroText: { maxWidth: 190 },
   hbig: { fontFamily: FONT.display, fontSize: 23, fontWeight: "600", color: "#FFFBF2", marginVertical: 2 },
-  primary: { marginTop: 12, borderRadius: 12, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
-  statrow: { flexDirection: "row", gap: 12, marginTop: 13 },
+  statrow: { flexDirection: "row", gap: 12, marginTop: 16 },
   stat: { flex: 1, borderWidth: 1, borderRadius: 14, padding: 12 },
   statbig: { fontFamily: FONT.display, fontSize: 25, fontWeight: "600", marginTop: 3 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { flexDirection: "row", alignItems: "center", gap: 7, borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 7, borderWidth: 1, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 12 },
   dot: { width: 6, height: 6, borderRadius: 3 },
 });

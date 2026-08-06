@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
 import { useColors, FONT } from "@/theme";
 import { TabBar, Label, EmptyState, Glyph } from "@/ui";
 import { tapLight } from "@/lib/haptics";
@@ -23,6 +24,7 @@ function detect(v: string) {
 
 export default function Ingest() {
   const c = useColors();
+  const router = useRouter();
   const [url, setUrl] = useState("https://skillshop.docebosaas.com/…/ai-ads");
   const [lib, setLib] = useState<Item[]>(START);
   const timers = useRef<Record<number, any>>({});
@@ -55,7 +57,7 @@ export default function Ingest() {
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
       <Text style={[st.title, { color: c.text }]}>Add material</Text>
-      <Text style={[st.subtitle, { color: c.muted }]}>PASTE A LINK OR DROP A FILE — WE DETECT THE TYPE FOR YOU.</Text>
+      <Text style={[st.subtitle, { color: c.muted }]}>Paste a link or drop a file.</Text>
 
       <View style={st.inputwrap}>
         <TextInput
@@ -83,7 +85,9 @@ export default function Ingest() {
       ) : (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 12, paddingBottom: 8 }}>
           {lib.map((it) => (
-            <View key={it.id} style={[st.libitem, { backgroundColor: c.card, borderColor: c.border }]}>
+            <Pressable key={it.id} accessibilityRole="button" accessibilityLabel={`Open card set: ${it.t}`}
+              onPress={() => { tapLight(); router.push(`/study?deck=${encodeURIComponent(it.t)}` as any); }}
+              style={[st.libitem, { backgroundColor: c.card, borderColor: c.border }]}>
               <View style={st.libhead}>
                 <Text style={{ fontFamily: FONT.display, fontSize: 13, fontWeight: "600", color: c.text, flex: 1 }}>{it.t}</Text>
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${it.t}`} hitSlop={8} onPress={() => remove(it.id)}>
@@ -96,7 +100,7 @@ export default function Ingest() {
                   <View style={{ height: "100%", width: `${it.p}%`, backgroundColor: c.tangerine }} />
                 </View>
               )}
-            </View>
+            </Pressable>
           ))}
         </ScrollView>
       )}

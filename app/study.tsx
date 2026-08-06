@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, TextInput, StyleSheet, Animated, PanResponder, Dimensions } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors, FONT } from "@/theme";
 import { Label, EmptyState, Glyph, useCardShortcuts } from "@/ui";
 import { FSRS6, Grade } from "@/lib/fsrs6";
@@ -31,12 +31,27 @@ const { width } = Dimensions.get("window");
 
 interface Snap { remaining: number[]; reviewed: number; conf: Conf | null; guess: string; }
 
+// Open a specific concept first when arriving from a "due today" chip or library item.
+function initialOrder(concept?: string): number[] {
+  const order = [0, 1, 2];
+  if (!concept) return order;
+  const q = concept.toLowerCase();
+  const i = q.includes("fsrs") || q.includes("stability") ? 1
+    : q.includes("spac") ? 0
+    : q.includes("sync") || q.includes("apply") || q.includes("application") ? 2
+    : -1;
+  return i < 0 ? order : [i, ...order.filter((x) => x !== i)];
+}
+
 export default function Study() {
   const c = useColors();
   const router = useRouter();
+  const { concept } = useLocalSearchParams<{ concept?: string }>();
   const base = 12, total = 34;
 
-  const [remaining, setRemaining] = useState<number[]>([0, 1, 2]);
+  const [remaining, setRemaining] = useState<number[]>(() =>
+    initialOrder(typeof concept === "string" ? concept : undefined)
+  );
   const [reviewed, setReviewed] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [conf, setConf] = useState<Conf | null>(null);
