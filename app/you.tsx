@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { useColors, useTheme, FONT } from "@/theme";
 import { useSettings, Settings } from "@/settings";
+import { useAuth } from "@/auth";
 import { TabBar, Label, Glyph } from "@/ui";
 import { tapLight } from "@/lib/haptics";
 
@@ -27,6 +28,8 @@ export default function You() {
   const mode = useTheme((s) => s.mode);
   const toggleTheme = useTheme((s) => s.toggle);
   const s = useSettings();
+  const email = useAuth((a) => a.email);
+  const signOut = useAuth((a) => a.signOut);
   const [flash, setFlash] = useState<string | null>(null);
 
   const set = (patch: Partial<Settings>) => { tapLight(); s.update(patch); };
@@ -53,7 +56,7 @@ export default function You() {
           <View style={[st.avatar, { backgroundColor: c.tangerine }]}><Text style={{ fontFamily: FONT.display, fontSize: 24, fontWeight: "600", color: c.onAccent }}>M</Text></View>
           <View>
             <Text style={{ fontFamily: FONT.display, fontSize: 20, fontWeight: "600", color: c.text }}>Mike</Text>
-            <Label style={{ marginTop: 3 }}>michaeltilleman@gmail.com</Label>
+            <Label style={{ marginTop: 3 }}>{email ?? "michaeltilleman@gmail.com"}</Label>
           </View>
         </View>
 
@@ -113,9 +116,10 @@ export default function You() {
         <Label style={st.section}>ACCOUNT</Label>
         <View style={[st.rows, { backgroundColor: c.card, borderColor: c.border }]}>
           <RowChoice glyph="↧" label="Export data" value="" onPress={() => {}} />
-          <View style={[rw.row, { borderBottomColor: c.border, borderBottomWidth: 0 }]}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Sign out" onPress={() => { tapLight(); signOut(); }}
+            style={[rw.row, { borderBottomColor: c.border, borderBottomWidth: 0 }]}>
             <View style={rw.left}><Glyph g="⏻" size={16} color={c.cherry} /><Text style={rw.label(c, c.cherry)}>Sign out</Text></View>
-          </View>
+          </Pressable>
         </View>
 
         <View style={{ height: 6 }} />

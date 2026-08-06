@@ -1,17 +1,12 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, TextInput, StyleSheet, Animated, PanResponder, Dimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors, FONT } from "@/theme";
 import { useSettings } from "@/settings";
-import { Label, EmptyState, Glyph, useCardShortcuts } from "@/ui";
+import { Label, EmptyState, LoadingState, Glyph, useCardShortcuts } from "@/ui";
 import { FSRS6, Grade } from "@/lib/fsrs6";
+import { useStudyData } from "@/data/useStudyData";
 import { tapLight, tapSuccess, tapWarning } from "@/lib/haptics";
-
-const DECK = [
-  { tag: "CONCEPT · L1", q: "Why does spacing reviews improve long-term retention more than massing them?", a: "Each retrieval near the point of forgetting is effortful, which drives a larger increase in memory stability — the spacing effect. Massed reviews are too easy to strengthen memory much.", miss: "the role of memory stability." },
-  { tag: "CLOZE · L3", q: "In FSRS, ______ is the number of days for recall probability to decay from 100% to 90%.", a: "Stability.", miss: "nothing — spot on." },
-  { tag: "APPLICATION · L2", q: "Syncing study state across offline devices — safest source of truth, and why?", a: "An append-only review log: it merges by union with no conflicts, and scheduler state is recomputed by replaying it.", miss: "why logs avoid conflicts." },
-];
 
 type Conf = "low" | "mid" | "high";
 const CONF: { key: Conf; label: string }[] = [
@@ -30,28 +25,14 @@ const fsrs = new FSRS6({ requestRetention: 0.9 });
 const fmt = (d: number) => (d < 1 ? "<1d" : d < 30 ? `${d}d` : `${Math.round(d / 30)}mo`);
 const { width } = Dimensions.get("window");
 
-// Open a specific concept first when arriving from a "due today" chip or library item.
-function initialOrder(concept?: string): number[] {
-  const order = [0, 1, 2];
-  if (!concept) return order;
-  const q = concept.toLowerCase();
-  const i = q.includes("fsrs") || q.includes("stability") ? 1
-    : q.includes("spac") ? 0
-    : q.includes("sync") || q.includes("apply") || q.includes("application") ? 2
-    : -1;
-  return i < 0 ? order : [i, ...order.filter((x) => x !== i)];
-}
-
 export default function Study() {
   const c = useColors();
   const router = useRouter();
   const { concept } = useLocalSearchParams<{ concept?: string }>();
   const { guessFirst, confidence, intervalPreviews, reduceMotion } = useSettings();
-  const base = 12, total = 34;
+  const data = useStudyData(typeof concept === "string" ? concept : undefined);
 
-  const [remaining, setRemaining] = useState<number[]>(() =>
-    initialOrder(typeof concept === "string" ? concept : undefined)
-  );
+  const [remaining, setRemaining] = useState<number[]>([]);
   const [reviewed, setReviewed] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [conf, setConf] = useState<Conf | null>(null);
@@ -63,9 +44,15 @@ export default function Study() {
   const pan = useRef(new Animated.ValueXY()).current;
   const flashTimer = useRef<any>(null);
 
+  // Initialise the queue once the data has loaded.
+  useEffect(() => {
+    if (!data.loading) { setRemaining(data.items.map((_, i) => i)); setReviewed(0); }
+  }, [data.loading, data.items.length]);
+
+  const total = Math.max(1, data.items.length);
   const current = remaining[0];
-  const card = current != null ? DECK[current] : null;
-  const previews = useMemo(() => fsrs.previewIntervals(null), [current]);
+  const card = current != null ? data.items[current] : null;
+  const previews = useMemo(() => fsrs.previewIntervals(card?.state ?? null), [current, data.items.length]);
 
   const reveal = (conance: Conf) => {
     if (revealed || !card) return;
@@ -84,20 +71,21 @@ export default function Study() {
   };
 
   const grade = (g: Grade) => {
-    if (!revealed || current == null) return;
-    const hyper = conf === "high" && g <= 2; // high-confidence miss → hypercorrection
+    if (!revealed || current == null || !card) return;
+    data.submit(card, g); // persist (no-op in demo mode)
+    const hyper = conf === "high" && g <= 2;
     hyper ? tapWarning() : g <= 1 ? tapWarning() : tapSuccess();
 
     const rest = remaining.slice(1);
     if (hyper) {
-      rest.splice(Math.min(1, rest.length), 0, current); // re-queue soon, not immediately
+      rest.splice(Math.min(1, rest.length), 0, current);
       if (flashTimer.current) clearTimeout(flashTimer.current);
       setFlash("You were certain but missed it — bumped to the front.");
       flashTimer.current = setTimeout(() => setFlash(null), 2600);
     }
     Animated.timing(pan, {
       toValue: { x: g === 4 ? width : g === 1 ? -width : 0, y: g === 3 ? -560 : g === 2 ? 560 : 0 },
-      duration: 200, useNativeDriver: true,
+      duration: reduceMotion ? 0 : 200, useNativeDriver: true,
     }).start(() => {
       pan.setValue({ x: 0, y: 0 });
       setRemaining(rest);
@@ -124,11 +112,14 @@ export default function Study() {
     })
   ).current;
 
+  if (data.loading) {
+    return <View style={[st.screen, { backgroundColor: c.bg }]}><LoadingState label="Loading your cards…" /></View>;
+  }
   if (current == null || !card) {
     return (
       <View style={[st.screen, { backgroundColor: c.bg }]}>
-        <EmptyState glyph="✓" title="Session complete"
-          body={`${reviewed} reviewed · retention on track at 91%. Next session in ~6 hours.`}
+        <EmptyState glyph="✓" title={reviewed > 0 ? "Session complete" : "All caught up"}
+          body={reviewed > 0 ? `${reviewed} reviewed · nice work. Next session in ~6 hours.` : "No cards are due right now. Add material or check back later."}
           cta="Back to home" onCta={() => router.replace("/")} />
       </View>
     );
@@ -144,9 +135,9 @@ export default function Study() {
           <Glyph g="✕" size={18} color={c.muted} />
         </Pressable>
         <View style={[st.pbar, { backgroundColor: c.border }]}>
-          <View style={{ height: "100%", width: `${((base + reviewed) / total) * 100}%`, backgroundColor: c.tangerine, borderRadius: 3 }} />
+          <View style={{ height: "100%", width: `${(reviewed / total) * 100}%`, backgroundColor: c.tangerine, borderRadius: 3 }} />
         </View>
-        <Label>{base + reviewed + 1}/{total}</Label>
+        <Label>{reviewed + 1}/{total}</Label>
       </View>
 
       {flash && (
@@ -166,12 +157,9 @@ export default function Study() {
 
         {!revealed && guessFirst && (
           <TextInput
-            value={guess}
-            onChangeText={setGuess}
+            value={guess} onChangeText={setGuess}
             accessibilityLabel="Type your best guess before revealing"
-            placeholder="Take your best guess first…"
-            placeholderTextColor={c.muted}
-            multiline
+            placeholder="Take your best guess first…" placeholderTextColor={c.muted} multiline
             style={[st.guess, { backgroundColor: c.card, borderColor: c.border, color: c.text }]}
           />
         )}
@@ -241,7 +229,6 @@ const st = StyleSheet.create({
   guess: { marginTop: 34, borderWidth: 1, borderRadius: 12, padding: 13, fontSize: 14, minHeight: 55, fontFamily: FONT.display, textAlignVertical: "top" },
   rule: { height: 1, marginTop: 0, marginBottom: 21 },
   ansbox: { borderWidth: 1, borderRadius: 14, padding: 15 },
-  missed: { marginTop: 10, borderRadius: 10, paddingVertical: 9, paddingHorizontal: 12 },
   foot: { flexShrink: 0 },
   primary: { borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   conf: { flex: 1, borderWidth: 1.5, borderRadius: 12, paddingVertical: 12, alignItems: "center" },
