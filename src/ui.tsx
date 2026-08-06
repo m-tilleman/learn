@@ -35,6 +35,25 @@ export function TabBar() {
     <View accessibilityRole="tablist" style={[s.tabbar, { borderTopColor: c.border }]}>
       {TABS.map((t) => {
         const on = activeFor(t.href);
+        if (t.key === "study") {
+          return (
+            <Pressable
+              key={t.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={t.label}
+              onPress={() => router.replace(t.href as any)}
+              style={s.tab}
+            >
+              <View style={[s.fab, { backgroundColor: c.tangerine, shadowColor: c.tangerine }]}>
+                <Glyph g="▶" size={22} color={c.onAccent} />
+              </View>
+              <Text style={{ fontFamily: FONT.mono, fontSize: 9, letterSpacing: 0.5, marginTop: 4, color: c.tangerine }}>
+                {t.label}
+              </Text>
+            </Pressable>
+          );
+        }
         return (
           <Pressable
             key={t.key}
@@ -112,8 +131,12 @@ export function useCardShortcuts(handlers: { onReveal?: () => void; onGrade?: (g
 }
 
 const s = StyleSheet.create({
-  tabbar: { flexDirection: "row", justifyContent: "space-between", borderTopWidth: 1, paddingTop: 11, paddingBottom: 4 },
+  tabbar: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", borderTopWidth: 1, paddingTop: 11, paddingBottom: 4 },
   tab: { alignItems: "center", flex: 1 },
+  fab: {
+    width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", marginTop: -26,
+    shadowOpacity: 0.55, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 10,
+  },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   cta: { marginTop: 16, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11 },
 });
