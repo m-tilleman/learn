@@ -174,11 +174,11 @@ export default function Study() {
         )}
 
         {revealed && (
-          <Animated.View style={{ opacity: ans, transform: [{ translateY: ansTranslate }] }}>
+          <Animated.View style={{ marginTop: 34, opacity: ans, transform: [{ translateY: ansTranslate }] }}>
             {guess.trim().length > 0 && (
-              <View style={{ marginBottom: 12 }}>
+              <View style={{ marginBottom: 21 }}>
                 <Label>YOUR GUESS{conf ? ` · ${CONF.find((x) => x.key === conf)!.label.toUpperCase()}` : ""}</Label>
-                <Text style={{ color: c.muted, fontSize: 14, lineHeight: 20, fontFamily: FONT.display, marginTop: 4 }}>{guess}</Text>
+                <Text style={{ color: c.muted, fontSize: 14, lineHeight: 21, fontFamily: FONT.display, marginTop: 8 }}>{guess}</Text>
               </View>
             )}
             <View style={[st.rule, { backgroundColor: c.border }]} />
@@ -226,11 +226,12 @@ const st = StyleSheet.create({
   pbar: { flex: 1, height: 6, borderRadius: 3, overflow: "hidden" },
   flash: { marginTop: 12, borderWidth: 1, borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12, flexShrink: 0 },
   mid: { flex: 1, justifyContent: "center", minHeight: 0 },
-  pill: { alignSelf: "flex-start", borderRadius: 999, paddingVertical: 5, paddingHorizontal: 11, marginBottom: 16 },
+  // Vertical rhythm uses a golden-ratio (Fibonacci) scale: 13 / 21 / 34.
+  pill: { alignSelf: "flex-start", borderRadius: 999, paddingVertical: 5, paddingHorizontal: 11, marginBottom: 21 },
   pillT: { fontFamily: FONT.mono, fontSize: 10, letterSpacing: 1.5 },
-  q: { fontFamily: FONT.display, fontSize: 23, fontWeight: "600", lineHeight: 31 },
-  guess: { marginTop: 16, borderWidth: 1, borderRadius: 12, padding: 12, fontSize: 14, minHeight: 52, fontFamily: FONT.display, textAlignVertical: "top" },
-  rule: { height: 1, marginTop: 4, marginBottom: 16 },
+  q: { fontFamily: FONT.display, fontSize: 23, fontWeight: "600", lineHeight: 32 },
+  guess: { marginTop: 34, borderWidth: 1, borderRadius: 12, padding: 13, fontSize: 14, minHeight: 55, fontFamily: FONT.display, textAlignVertical: "top" },
+  rule: { height: 1, marginTop: 0, marginBottom: 21 },
   ansbox: { borderWidth: 1, borderRadius: 14, padding: 15 },
   missed: { marginTop: 10, borderRadius: 10, paddingVertical: 9, paddingHorizontal: 12 },
   foot: { flexShrink: 0 },
