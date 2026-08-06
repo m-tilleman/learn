@@ -13,10 +13,6 @@ export default function Stats() {
   const fcMax = 45;
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
-      <View style={st.statusbar}>
-        <Label>9:41</Label>
-        <Label>5G · 100%</Label>
-      </View>
       <Text style={[st.title, { color: c.text }]}>Insights</Text>
 
       <ScrollView style={{ flex: 1, marginTop: 10 }} contentContainerStyle={{ paddingBottom: 10 }}>

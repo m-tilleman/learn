@@ -54,11 +54,6 @@ export default function Ingest() {
 
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
-      <View style={st.statusbar}>
-        <Label>9:41</Label>
-        <Label>5G · 100%</Label>
-      </View>
-
       <Text style={[st.title, { color: c.text }]}>Add material</Text>
       <Text style={[st.subtitle, { color: c.muted }]}>PASTE A LINK OR DROP A FILE — WE DETECT THE TYPE FOR YOU.</Text>
 

@@ -23,11 +23,6 @@ export default function Home() {
 
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
-      <View style={st.statusbar}>
-        <Label>9:41</Label>
-        <Label>5G · 100%</Label>
-      </View>
-
       <View style={st.hd}>
         <Text style={[st.wordmark, { color: c.text }]}>RECALL</Text>
         <View style={[st.streak, { backgroundColor: "rgba(226,141,52,0.16)" }]}>

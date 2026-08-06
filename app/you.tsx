@@ -33,11 +33,6 @@ export default function You() {
 
   return (
     <View style={[st.screen, { backgroundColor: c.bg }]}>
-      <View style={st.statusbar}>
-        <Label>9:41</Label>
-        <Label>5G · 100%</Label>
-      </View>
-
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 10 }}>
         <View style={st.profile}>
           <View style={[st.avatar, { backgroundColor: c.tangerine }]}><Text style={{ fontFamily: FONT.display, fontSize: 24, fontWeight: "600", color: c.onAccent }}>M</Text></View>
