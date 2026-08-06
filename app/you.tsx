@@ -5,6 +5,7 @@ import { useSettings, Settings } from "@/settings";
 import { useAuth } from "@/auth";
 import { TabBar, Label, Glyph } from "@/ui";
 import { tapLight } from "@/lib/haptics";
+import { useStats } from "@/data/useStats";
 
 function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
   const c = useColors();
@@ -30,6 +31,7 @@ export default function You() {
   const s = useSettings();
   const email = useAuth((a) => a.email);
   const signOut = useAuth((a) => a.signOut);
+  const { stats } = useStats();
   const [flash, setFlash] = useState<string | null>(null);
 
   const set = (patch: Partial<Settings>) => { tapLight(); s.update(patch); };
@@ -61,8 +63,8 @@ export default function You() {
         </View>
 
         <View style={st.statrow}>
-          <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}><Label>STREAK</Label><Text style={[st.statbig, { color: c.text }]}>23</Text><Label style={{ marginTop: 4 }}>LONGEST 41</Label></View>
-          <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}><Label>REVIEWED</Label><Text style={[st.statbig, { color: c.text }]}>8,412</Text><Label style={{ marginTop: 4 }}>ALL TIME</Label></View>
+          <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}><Label>STREAK</Label><Text style={[st.statbig, { color: c.text }]}>{stats.streak}</Text><Label style={{ marginTop: 4 }}>LONGEST {stats.longestStreak}</Label></View>
+          <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}><Label>REVIEWED</Label><Text style={[st.statbig, { color: c.text }]}>{stats.reviewsAllTime.toLocaleString()}</Text><Label style={{ marginTop: 4 }}>ALL TIME</Label></View>
         </View>
 
         {flash && (

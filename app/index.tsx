@@ -4,19 +4,19 @@ import Svg, { Defs, LinearGradient as SvgGradient, Stop, Rect, Circle, Polyline,
 import { useColors, FONT } from "@/theme";
 import { TabBar, Label } from "@/ui";
 import { tapLight } from "@/lib/haptics";
-
-const DUE = [
-  { t: "Spacing effect", c: "cherry", s: "due now" },
-  { t: "FSRS scheduler", c: "cherry", s: "due now" },
-  { t: "Testing effect", c: "tangerine", s: "2 left" },
-  { t: "Dual coding", c: "turquoise", s: "1 left" },
-  { t: "Interleaving", c: "turquoise", s: "3 left" },
-] as const;
+import { useStats } from "@/data/useStats";
 
 export default function Home() {
   const c = useColors();
   const router = useRouter();
-  const done = 12, total = 34;
+  const { stats } = useStats();
+
+  const dueNow = stats.dueNow;
+  const doneToday = stats.weekReviews[6] ?? 0;
+  const total = Math.max(1, doneToday + dueNow);
+  const done = Math.min(doneToday, total);
+  const mins = dueNow === 0 ? 0 : Math.max(1, Math.round(dueNow * 0.25));
+  const DUE = stats.dueConcepts;
   const C = 2 * Math.PI * 40;
 
   const openConcept = (name: string) => {
@@ -29,7 +29,7 @@ export default function Home() {
       <View style={st.hd}>
         <Text style={[st.wordmark, { color: c.text }]}>RECALL</Text>
         <View style={[st.streak, { backgroundColor: "rgba(226,141,52,0.16)" }]}>
-          <Text style={{ color: c.tangerineSoft, fontWeight: "600", fontFamily: FONT.display }}>▲ 23</Text>
+          <Text style={{ color: c.tangerineSoft, fontWeight: "600", fontFamily: FONT.display }}>▲ {stats.streak}</Text>
         </View>
       </View>
 
@@ -46,8 +46,8 @@ export default function Home() {
         </Svg>
         <View style={st.heroText}>
           <Label style={{ color: "rgba(255,255,255,0.85)" }}>TODAY'S SESSION</Label>
-          <Text style={st.hbig}>22 cards left</Text>
-          <Label style={{ color: "rgba(255,255,255,0.85)" }}>≈ 6 MIN · MIXED REVIEW</Label>
+          <Text style={st.hbig}>{dueNow === 0 ? "All caught up" : `${dueNow} card${dueNow === 1 ? "" : "s"} left`}</Text>
+          <Label style={{ color: "rgba(255,255,255,0.85)" }}>{dueNow === 0 ? "NOTHING DUE · NICE WORK" : `≈ ${mins} MIN · MIXED REVIEW`}</Label>
         </View>
         <Svg width={78} height={78} viewBox="0 0 96 96" style={{ position: "absolute", top: 15, right: 15 }}>
           <Circle cx={48} cy={48} r={40} fill="none" stroke="rgba(20,15,8,0.35)" strokeWidth={7} />
@@ -61,21 +61,30 @@ export default function Home() {
       <View style={st.statrow}>
         <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}>
           <Label>RETENTION</Label>
-          <Text style={[st.statbig, { color: c.text }]}>91%</Text>
+          <Text style={[st.statbig, { color: c.text }]}>{stats.retention == null ? "—" : `${stats.retention}%`}</Text>
           <Svg width="100%" height={18} viewBox="0 0 100 18" preserveAspectRatio="none">
             <Polyline points="0,13 17,11 33,12 50,8 67,9 83,5 100,4" fill="none" stroke={c.turquoiseLt} strokeWidth={2.5} />
           </Svg>
         </View>
         <View style={[st.stat, { backgroundColor: c.card, borderColor: c.border }]}>
           <Label>MATURE</Label>
-          <Text style={[st.statbig, { color: c.text }]}>612</Text>
-          <Label style={{ marginTop: 6, color: c.turquoiseLt }}>+18 THIS WEEK</Label>
+          <Text style={[st.statbig, { color: c.text }]}>{stats.mature}</Text>
+          <Label style={{ marginTop: 6, color: c.turquoiseLt }}>OF {stats.totalCards} CARDS</Label>
         </View>
       </View>
 
       <Label style={{ marginTop: 22, marginBottom: 8 }}>DUE TODAY</Label>
       <View style={st.chips}>
-        {DUE.map((d, i) => (
+        {DUE.length === 0 ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="Add material"
+            onPress={() => { tapLight(); router.push("/ingest" as any); }}
+            style={[st.chip, { backgroundColor: c.card, borderColor: c.border }]}>
+            <View style={[st.dot, { backgroundColor: c.turquoise }]} />
+            <Text style={{ color: c.text, fontSize: 12, fontFamily: FONT.display }}>
+              {stats.totalCards === 0 ? "Add material to start →" : "Nothing due — add material →"}
+            </Text>
+          </Pressable>
+        ) : DUE.map((d, i) => (
           <Pressable key={i} accessibilityRole="button" accessibilityLabel={`Study ${d.t}`}
             onPress={() => openConcept(d.t)} style={[st.chip, { backgroundColor: c.card, borderColor: c.border }]}>
             <View style={[st.dot, { backgroundColor: (c as any)[d.c] }]} />

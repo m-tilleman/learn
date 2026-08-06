@@ -3,23 +3,32 @@ import { useRouter } from "expo-router";
 import Svg, { Polyline } from "react-native-svg";
 import { useColors, FONT } from "@/theme";
 import { TabBar, Label, Glyph } from "@/ui";
+import { useStats } from "@/data/useStats";
 
-const WEEK = [42, 51, 38, 47, 60, 29, 34];
-const FORECAST = [34, 28, 41, 22, 30, 19, 25];
-const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const DOW = ["S", "M", "T", "W", "T", "F", "S"];
 const FDAYS = ["1", "2", "3", "4", "5", "6", "7"];
-
-// Card maturity buckets.
-const LEARNING = 40, YOUNG = 188, MATURE = 612;
-const TOTAL = LEARNING + YOUNG + MATURE;
+// Letters for the last 7 days ending today.
+const weekDayLabels = () => {
+  const out: string[] = [];
+  const d = new Date();
+  for (let i = 6; i >= 0; i--) { const x = new Date(d); x.setDate(d.getDate() - i); out.push(DOW[x.getDay()]); }
+  return out;
+};
 
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 
 export default function Stats() {
   const c = useColors();
   const router = useRouter();
-  const wkMax = Math.max(...WEEK);
-  const fcMax = Math.max(...FORECAST);
+  const { stats } = useStats();
+
+  const WEEK = stats.weekReviews;
+  const FORECAST = stats.forecast;
+  const DAYS = weekDayLabels();
+  const LEARNING = stats.learning, YOUNG = stats.young, MATURE = stats.mature;
+  const TOTAL = Math.max(1, LEARNING + YOUNG + MATURE);
+  const wkMax = Math.max(1, ...WEEK);
+  const fcMax = Math.max(1, ...FORECAST);
   const wkTotal = sum(WEEK);
   const wkAvg = Math.round(wkTotal / WEEK.length);
   const fcTotal = sum(FORECAST);
@@ -39,13 +48,17 @@ export default function Stats() {
         <View style={[s.card, { backgroundColor: c.card, borderColor: c.border }]}>
           <Label>TRUE RETENTION</Label>
           <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 2 }}>
-            <Text style={{ fontFamily: FONT.display, fontSize: 34, fontWeight: "600", color: c.text }}>91%</Text>
+            <Text style={{ fontFamily: FONT.display, fontSize: 34, fontWeight: "600", color: c.text }}>{stats.retention == null ? "—" : `${stats.retention}%`}</Text>
             <Label style={{ color: c.turquoiseLt }}>TARGET 90%</Label>
           </View>
           <Svg width="100%" height={30} viewBox="0 0 100 30" preserveAspectRatio="none" style={{ marginTop: 8 }}>
             <Polyline points="0,22 14,20 28,21 43,14 57,15 71,9 85,8 100,6" fill="none" stroke={c.turquoiseLt} strokeWidth={2.5} />
           </Svg>
-          <Caption>Share of due cards you recalled correctly. You're 1 point above your 90% target — memories are sticking. Raise the target to review less often, or keep it as a safety margin.</Caption>
+          <Caption>{stats.retention == null
+            ? "Share of due cards you recall correctly. Grade a few reviews and this fills in — aim to hover near your 90% target."
+            : stats.retention >= 90
+              ? `Share of due cards you recalled correctly — ${stats.retention - 90} point${stats.retention - 90 === 1 ? "" : "s"} above your 90% target. Memories are sticking; you could raise the target to review less often.`
+              : `Share of due cards you recalled correctly — a bit under your 90% target. Reviewing due cards promptly (rather than late) brings it back up.`}</Caption>
         </View>
 
         {/* CONSISTENCY / THIS WEEK */}
@@ -86,7 +99,7 @@ export default function Stats() {
         <Label style={s.section}>MEMORY STRENGTH</Label>
         <View style={[s.card, { backgroundColor: c.card, borderColor: c.border }]}>
           <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}>
-            <Text style={{ fontFamily: FONT.display, fontSize: 26, fontWeight: "600", color: c.text }}>~34 days</Text>
+            <Text style={{ fontFamily: FONT.display, fontSize: 26, fontWeight: "600", color: c.text }}>{stats.avgStability == null ? "—" : `~${stats.avgStability} days`}</Text>
             <Label style={{ color: c.turquoiseLt }}>AVG. STABILITY</Label>
           </View>
           <Caption>On average, how long a card stays above 90% recall before it's due again. Higher means stronger, longer-lasting memory — it climbs every time you recall successfully.</Caption>
@@ -117,7 +130,7 @@ export default function Stats() {
           style={[s.card, { backgroundColor: c.card, borderColor: "rgba(226,74,52,0.35)" }]}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}>
-              <Text style={{ fontFamily: FONT.display, fontSize: 26, fontWeight: "600", color: c.cherry }}>5</Text>
+              <Text style={{ fontFamily: FONT.display, fontSize: 26, fontWeight: "600", color: c.cherry }}>{stats.leeches}</Text>
               <Label style={{ color: c.cherry }}>LEECHES</Label>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
