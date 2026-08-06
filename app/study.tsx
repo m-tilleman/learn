@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, TextInput, StyleSheet, Animated, PanResponder, Dimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors, FONT } from "@/theme";
+import { useSettings } from "@/settings";
 import { Label, EmptyState, Glyph, useCardShortcuts } from "@/ui";
 import { FSRS6, Grade } from "@/lib/fsrs6";
 import { tapLight, tapSuccess, tapWarning } from "@/lib/haptics";
@@ -45,6 +46,7 @@ export default function Study() {
   const c = useColors();
   const router = useRouter();
   const { concept } = useLocalSearchParams<{ concept?: string }>();
+  const { guessFirst, confidence, intervalPreviews, reduceMotion } = useSettings();
   const base = 12, total = 34;
 
   const [remaining, setRemaining] = useState<number[]>(() =>
@@ -70,12 +72,13 @@ export default function Study() {
     tapLight();
     setConf(conance);
     setRevealed(true);
-    Animated.timing(ans, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    Animated.timing(ans, { toValue: 1, duration: reduceMotion ? 0 : 300, useNativeDriver: true }).start();
   };
 
   const settleNext = () => {
     ans.setValue(0);
     setRevealed(false); setConf(null); setGuess("");
+    if (reduceMotion) { enter.setValue(1); return; }
     enter.setValue(0.92);
     Animated.spring(enter, { toValue: 1, useNativeDriver: true, speed: 16, bounciness: 6 }).start();
   };
@@ -161,7 +164,7 @@ export default function Study() {
         </View>
         <Text style={[st.q, { color: c.text }]}>{card.q}</Text>
 
-        {!revealed && (
+        {!revealed && guessFirst && (
           <TextInput
             value={guess}
             onChangeText={setGuess}
@@ -191,29 +194,34 @@ export default function Study() {
 
       <View style={st.foot}>
         {!revealed ? (
-          <>
-            <Label style={{ textAlign: "center", marginBottom: 10 }}>REVEAL — HOW SURE ARE YOU?</Label>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              {CONF.map(({ key, label }) => (
-                <Pressable key={key} accessibilityRole="button" accessibilityLabel={`Reveal, confidence ${label}`}
-                  onPress={() => reveal(key)} style={[st.conf, { backgroundColor: c.card, borderColor: c.border }]}>
-                  <Text style={{ color: c.text, fontFamily: FONT.display, fontWeight: "600", fontSize: 13 }}>{label}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </>
+          confidence ? (
+            <>
+              <Label style={{ textAlign: "center", marginBottom: 10 }}>REVEAL — HOW SURE ARE YOU?</Label>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {CONF.map(({ key, label }) => (
+                  <Pressable key={key} accessibilityRole="button" accessibilityLabel={`Reveal, confidence ${label}`}
+                    onPress={() => reveal(key)} style={[st.conf, { backgroundColor: c.card, borderColor: c.border }]}>
+                    <Text style={{ color: c.text, fontFamily: FONT.display, fontWeight: "600", fontSize: 13 }}>{label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          ) : (
+            <Pressable accessibilityRole="button" accessibilityLabel="Show answer" onPress={() => reveal("mid")}
+              style={[st.primary, { backgroundColor: c.tangerine }]}>
+              <Text style={{ color: c.onAccent, fontFamily: FONT.display, fontWeight: "600", fontSize: 14 }}>Show answer</Text>
+            </Pressable>
+          )
         ) : (
-          <>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              {GRADES.map(({ g, label, key }) => (
-                <Pressable key={g} accessibilityRole="button" accessibilityLabel={`Grade ${label}, next review in ${fmt(previews[g])}`}
-                  onPress={() => grade(g)} style={[st.grade, { backgroundColor: c.card, borderColor: gc[key] }]}>
-                  <Text style={{ color: gc[key], fontFamily: FONT.display, fontWeight: "600", fontSize: 13 }}>{label}</Text>
-                  <Text style={{ color: c.muted, fontFamily: FONT.mono, fontSize: 10, marginTop: 3 }}>{fmt(previews[g])}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {GRADES.map(({ g, label, key }) => (
+              <Pressable key={g} accessibilityRole="button" accessibilityLabel={`Grade ${label}, next review in ${fmt(previews[g])}`}
+                onPress={() => grade(g)} style={[st.grade, { backgroundColor: c.card, borderColor: gc[key] }]}>
+                <Text style={{ color: gc[key], fontFamily: FONT.display, fontWeight: "600", fontSize: 13 }}>{label}</Text>
+                {intervalPreviews && <Text style={{ color: c.muted, fontFamily: FONT.mono, fontSize: 10, marginTop: 3 }}>{fmt(previews[g])}</Text>}
+              </Pressable>
+            ))}
+          </View>
         )}
       </View>
     </View>
@@ -235,6 +243,7 @@ const st = StyleSheet.create({
   ansbox: { borderWidth: 1, borderRadius: 14, padding: 15 },
   missed: { marginTop: 10, borderRadius: 10, paddingVertical: 9, paddingHorizontal: 12 },
   foot: { flexShrink: 0 },
+  primary: { borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   conf: { flex: 1, borderWidth: 1.5, borderRadius: 12, paddingVertical: 12, alignItems: "center" },
   grade: { flex: 1, borderWidth: 1.5, borderRadius: 12, paddingVertical: 9, alignItems: "center" },
 });
